@@ -2,8 +2,8 @@
 
 This is a scoped application for Service-now to allow easier searching all code sources.
 
-![Code Search Preview](screenshot.png)
-
+<video src="demo.mp4" width=400 controls>
+</video>
 ---
 
 ## Features
