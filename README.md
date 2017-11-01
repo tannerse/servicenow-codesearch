@@ -2,9 +2,7 @@
 
 This is a scoped application for Service-now to allow easier searching all code sources.
 
-<figure class="video_container">
-  <iframe src="/demo.mp4" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
+[![](screenshot.png)](https://gitlab.com/jacebenson/servicenow-codesearch/blob/docs/demo.mp4)
 
 ---
 
