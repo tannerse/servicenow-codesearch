@@ -4,7 +4,7 @@ This is a scoped application for Service-now to allow easier searching all code 
 
 <figure class="video_container">
   <video controls="true" allowfullscreen="true" poster="path/to/poster_image.png">
-    <source src="demo.mp4" type="video/mp4">
+    <source src="/demo.mp4" type="video/mp4">
     </video>
 </figure>
 
