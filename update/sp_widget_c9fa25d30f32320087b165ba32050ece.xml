@@ -4,7 +4,10 @@
         <client_script><![CDATA[function($scope, $http, $location) {
 	/* widget controller */
 	var c = this;
+	$scope.startSearchSysid = false;
+	$scope.startSearchCode = false;
 	c.doSearch = function() {
+		$scope.startSearchCode = true;
 		if (c.data.searchTerm) {
 			// purposely searching all scopes so hard-coding the parameter
 			$http.get("/api/sn_codesearch/code_search/search?term=" + c.data.searchTerm + "&search_all_scopes=true")
@@ -13,10 +16,13 @@
 				c.allScopes = "";
 				$scope.response = response;
 			});
-			$scope.server.update().then(function(response){
-				console.log('on client: ' + JSON.stringify(response,'','  '));
-				$scope.records = response.urls;
-			});
+			if(c.data.searchTerm.length === 32){
+				$scope.startSearchSysid = true;
+				$scope.server.update().then(function(response){
+					//console.log('on client: ' + JSON.stringify(response,'','  '));
+					$scope.records = response.urls;
+				});
+			}
 		} else {
 			$scope.response = "";
 		}
@@ -83,35 +89,39 @@
 		'sys_upgrade_blame',
 		'wf_log'
 	];
-	if(input && input.searchTerm){
-		data.urls = [];
-		var check;
-		var tableName;
-		var table = new GlideRecord('sys_db_object');
-		//Make sure we're not looking at a ts (text search) table.
-		var query = '';
-		query += 'sys_update_nameISNOTEMPTY^';
-		for(var i=0;i<excludeTables.length;i++){
-			query += 'name!=' + excludeTables[i] + '^'
-		}
-		query += 'nameISNOTEMPTY^';
-		query += 'nameNOT LIKEts_^';
-		query += 'nameNOT LIKEv_^';
-		table.addEncodedQuery(query); 
-		data.query = table.getEncodedQuery();
-		table.query();
-		while (table.next()) {
-			var url = gs.getProperty('glide.servlet.uri');
-			tableName = table.getValue('name');
-			check = new GlideRecord(tableName);
-			if (check.get(input.searchTerm)) {
-				url += tableName + '.do?sys_id=' + input.searchTerm;
-				data.urls.push({
-					url: url,
-					displayValue: check.getDisplayValue() || "(empty)",
-					table: tableName.toString()
-				});
+	if(input && input.searchTerm && input.searchTerm.length===32){
+		try {
+			data.urls = [];
+			var check;
+			var tableName;
+			var table = new GlideRecord('sys_db_object');
+			//Make sure we're not looking at a ts (text search) table.
+			var query = '';
+			query += 'sys_update_nameISNOTEMPTY^';
+			for(var i=0;i<excludeTables.length;i++){
+				query += 'name!=' + excludeTables[i] + '^'
 			}
+			query += 'nameISNOTEMPTY^';
+			query += 'nameNOT LIKEts_^';
+			query += 'nameNOT LIKEv_^';
+			table.addEncodedQuery(query); 
+			data.query = table.getEncodedQuery();
+			table.query();
+			while (table.next()) {
+				var url = gs.getProperty('glide.servlet.uri');
+				tableName = table.getValue('name');
+				check = new GlideRecord(tableName);
+				if (check.get(input.searchTerm)) {
+					url += tableName + '.do?sys_id=' + input.searchTerm;
+					data.urls.push({
+						url: url,
+						displayValue: check.getDisplayValue() || "(empty)",
+						table: tableName.toString()
+					});
+				}
+			}
+		} catch (error){
+			// 
 		}
 	}
 })();]]></script>
@@ -120,14 +130,14 @@
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 09:02:53</sys_created_on>
         <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
-        <sys_mod_count>225</sys_mod_count>
+        <sys_mod_count>231</sys_mod_count>
         <sys_name>Code Search Widget</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
         <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
-        <sys_updated_on>2017-11-01 19:15:00</sys_updated_on>
+        <sys_updated_on>2017-11-01 19:35:50</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
   <div class="panel-heading">
     <h3 class="panel-title">${Code Search}</h3>
@@ -145,12 +155,12 @@
     </form>
   </div>
 </div>
-<div class="panel panel-default" ng-if="!records">
+<div class="panel panel-default" ng-if="!records && startSearchSysid">
   <h1 class="text-center">
     Searching sys_ids...
   </h1>
 </div>
-<div class="panel panel-default" ng-if="records.length>0">
+<div class="panel panel-default" ng-if="records.length>0 && startSearchSysid">
   <h1 class="text-center">
     Exact sys_id matches
   </h1>
@@ -162,12 +172,12 @@
     </div>
   </div>
 </div>
-<div class="panel panel-default" ng-if="!response">
+<div class="panel panel-default" ng-if="!response && startSearchCode">
   <h1 class="text-center">
     Searching code...
   </h1>
 </div>
-<div class="panel panel-default" ng-if="response.result">
+<div class="panel panel-default" ng-if="response.result && startSearchCode">
   <h1 class="text-center">
     Code matches
   </h1>
