@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <client_script><![CDATA[function($scope, $http, $location) {
+  /* widget controller */
+  var c = this;
+	c.doSearch = function() {
+		if (c.searchTerm) {
+			// purposely searching all scopes so hard-coding the parameter
+			$http.get("/api/sn_codesearch/code_search/search?term=" + c.searchTerm + "&search_all_scopes=true")
+				.success(function(response) {
+					c.searchTerm = "";
+					c.allScopes = "";
+					$scope.response = response;
+				});
+		} else {
+			$scope.response = "";
+		}
+	}
+	
+	// Update to work with URL parameters
+	if($location.search().searchTerm) {
+		c.searchTerm = $location.search().searchTerm;
+		c.doSearch();
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>code_search_widget</id>
+        <internal>false</internal>
+        <link/>
+        <name>Code Search Widget</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin_SHARE</sys_created_by>
+        <sys_created_on>2017-05-23 09:02:53</sys_created_on>
+        <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
+        <sys_mod_count>184</sys_mod_count>
+        <sys_name>Code Search Widget</sys_name>
+        <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
+        <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
+        <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
+        <sys_updated_on>2017-11-01 14:43:07</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h3 class="panel-title">${Code Search}</h3>
+  </div>
+  <div class="panel-body col-12">
+    <form class="navbar-form col-12" ng-submit="c.doSearch()">
+      <div class="row">
+        <div class="input-group" style="display:flex;">
+          <input id="search-term" type="text" placeholder="${Search term}" class="form-control" ng-model="c.searchTerm" /> 
+          <span class="input-group-btn">
+            <button class="btn btn-primary" ng-click="c.doSearch()"><i class="glyphicon glyphicon-search" aria-hidden="true"></i></button>
+          </span>
+        </div><!-- /input-group -->
+      </div>
+    </form>
+  </div>
+</div>
+<div class="panel panel-default" ng-if="response.result">
+  <div class="panel-body">
+    <div ng-repeat="table in response.result">
+      <div class="row" ng-if="table.hits.length>0">
+        <p>
+          <a href="#{{table.recordType}}">{{table.tableLabel}} has {{table.hits.length}} matching records.</a>
+        </p>
+      </div>
+    </div>
+    <div ng-repeat="table in response.result">
+      <div class="row" id="{{table.recordType}}" ng-if="table.hits.length>0">
+        <h1 class="text-center">
+          {{table.tableLabel}}
+        </h1>
+      </div>
+      <div class="row" ng-if="table.hits.length>0">
+        <div class="row" ng-repeat="hit in table.hits">
+          <div class="col-sm-2">
+            <a ng-href="{{hit.className}}.do?sys_id={{hit.sysId}}" target="_blank">{{hit.name}}</a>
+          </div>
+          <div class="col-sm-10">
+            <div ng-repeat="match in hit.matches"> 
+              <pre><code class="javascript"><span ng-repeat="context in match.lineMatches"><span>Line {{context.line}}</span>: <span>{{context.context}}</span><br/></span></code></pre> 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>
