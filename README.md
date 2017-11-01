@@ -2,7 +2,7 @@
 
 This is a scoped application for Service-now to allow easier searching all code sources.
 
-<video src="demo.mp4" width=400 controls>
+<video src="/demo.mp4" width=400 controls>
 </video>
 ---
 
