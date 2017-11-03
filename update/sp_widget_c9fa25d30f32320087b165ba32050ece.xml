@@ -111,7 +111,10 @@
 				var url = gs.getProperty('glide.servlet.uri');
 				tableName = table.getValue('name');
 				check = new GlideRecord(tableName);
-				if (check.get(input.searchTerm)) {
+				check.addQuery('sys_id', input.searchTerm);
+				check.query();
+				if (check.hasNext()) {
+					check.next();
 					url += tableName + '.do?sys_id=' + input.searchTerm;
 					data.urls.push({
 						url: url,
@@ -130,14 +133,14 @@
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 09:02:53</sys_created_on>
         <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
-        <sys_mod_count>231</sys_mod_count>
+        <sys_mod_count>232</sys_mod_count>
         <sys_name>Code Search Widget</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
         <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
-        <sys_updated_on>2017-11-01 19:35:50</sys_updated_on>
+        <sys_updated_on>2017-11-03 14:29:09</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
   <div class="panel-heading">
     <h3 class="panel-title">${Code Search}</h3>
