@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update sys_domain="global" table="sys_app_module">
+    <sys_app_module action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <application display_value="Code Search">28662537db130300f7db793ebf961905</application>
+        <assessment/>
+        <content_page/>
+        <device_type/>
+        <filter/>
+        <hint/>
+        <homepage/>
+        <image/>
+        <link_type>DIRECT</link_type>
+        <map_page/>
+        <mobile_title>Search</mobile_title>
+        <mobile_view_name>Mobile</mobile_view_name>
+        <name/>
+        <order>100</order>
+        <override_menu_roles>false</override_menu_roles>
+        <query>/$sp?id=code_search</query>
+        <report/>
+        <roles/>
+        <survey/>
+        <survey_overwrite>true</survey_overwrite>
+        <sys_class_name>sys_app_module</sys_class_name>
+        <sys_created_by>jace.benson@gmail.com</sys_created_by>
+        <sys_created_on>2018-01-03 14:44:49</sys_created_on>
+        <sys_customer_update>false</sys_customer_update>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>0886e537db130300f7db793ebf961901</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Search</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
+        <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+        <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
+        <sys_update_name>sys_app_module_0886e537db130300f7db793ebf961901</sys_update_name>
+        <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
+        <sys_updated_on>2018-01-03 14:44:49</sys_updated_on>
+        <timeline_page/>
+        <title>Search</title>
+        <uncancelable>false</uncancelable>
+        <view_name/>
+        <window_name/>
+    </sys_app_module>
+</record_update>
