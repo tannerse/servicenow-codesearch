@@ -20,25 +20,21 @@
         <query>/$sp?id=code_search</query>
         <report/>
         <roles/>
-        <survey/>
-        <survey_overwrite>true</survey_overwrite>
         <sys_class_name>sys_app_module</sys_class_name>
         <sys_created_by>jace.benson@gmail.com</sys_created_by>
         <sys_created_on>2018-01-03 14:44:49</sys_created_on>
-        <sys_customer_update>false</sys_customer_update>
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>0886e537db130300f7db793ebf961901</sys_id>
-        <sys_mod_count>0</sys_mod_count>
+        <sys_mod_count>2</sys_mod_count>
         <sys_name>Search</sys_name>
         <sys_overrides/>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
-        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sys_app_module_0886e537db130300f7db793ebf961901</sys_update_name>
-        <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
-        <sys_updated_on>2018-01-03 14:44:49</sys_updated_on>
+        <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
+        <sys_updated_on>2018-03-07 14:12:17</sys_updated_on>
         <timeline_page/>
         <title>Search</title>
         <uncancelable>false</uncancelable>

@@ -12,7 +12,6 @@
         <sys_class_name>sys_app_application</sys_class_name>
         <sys_created_by>jace.benson@gmail.com</sys_created_by>
         <sys_created_on>2018-01-03 14:42:49</sys_created_on>
-        <sys_customer_update>false</sys_customer_update>
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>28662537db130300f7db793ebf961905</sys_id>
@@ -21,7 +20,6 @@
         <sys_overrides/>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
-        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sys_app_application_28662537db130300f7db793ebf961905</sys_update_name>
         <sys_updated_by>jace.benson@gmail.com</sys_updated_by>

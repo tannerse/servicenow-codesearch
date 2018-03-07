@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <record_update table="sp_page">
     <sp_page action="INSERT_OR_UPDATE">
+        <category/>
         <css/>
         <draft>false</draft>
+        <dynamic_title_structure/>
         <id>code_search</id>
         <internal>false</internal>
         <public>false</public>
@@ -11,17 +13,16 @@
         <sys_class_name>sp_page</sys_class_name>
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 10:39:51</sys_created_on>
-        <sys_customer_update>false</sys_customer_update>
         <sys_id>592182130f72320087b165ba32050ebf</sys_id>
         <sys_mod_count>1</sys_mod_count>
         <sys_name>code_search</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
-        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_page_592182130f72320087b165ba32050ebf</sys_update_name>
         <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
         <sys_updated_on>2017-11-03 14:58:14</sys_updated_on>
         <title>Code Search</title>
     </sp_page>
+    <sys_translated_text action="delete_multiple" query="documentkey=592182130f72320087b165ba32050ebf"/>
 </record_update>

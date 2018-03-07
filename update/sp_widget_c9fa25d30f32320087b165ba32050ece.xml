@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <record_update table="sp_widget">
     <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
         <client_script><![CDATA[function($scope, $http, $location) {
 	/* widget controller */
 	var c = this;
@@ -15,6 +16,11 @@
 				c.searchTerm = "";
 				c.allScopes = "";
 				$scope.response = response;
+				$scope.server.update().then(function(response){
+					$scope.startCustomSearch = true;
+					//console.log('on client: ' + JSON.stringify(response,'','  '));
+					$scope.records = response.urls;
+				})
 			});
 			if(c.data.searchTerm.length === 32){
 				$scope.startSearchSysid = true;
@@ -89,18 +95,45 @@
 		'sys_upgrade_blame',
 		'wf_log'
 	];
+	var includeTables = [
+		{
+			table: 'sys_variable_value',
+			columns: ['value']
+		},
+		{
+			table: 'sys_dictionary',
+			columns: [
+				'dynamic_ref_qual',
+				'reference_qual',
+				'attributes',
+				'default_value',
+				'calculation'
+			]
+		},{
+			table: 'sys_dictionary_override',
+			columns: [
+				'reference_qual',
+				'attributes',
+				'default_value',
+				'calculation'
+			]
+		}
+	];
+	data.urls = [];
+	var url = gs.getProperty('glide.servlet.uri');
 	if(input && input.searchTerm && input.searchTerm.length===32){
+		// search for sys_ids...
 		try {
-			data.urls = [];
 			var check;
 			var tableName;
 			var table = new GlideRecord('sys_db_object');
 			//Make sure we're not looking at a ts (text search) table.
 			var query = '';
 			query += 'sys_update_nameISNOTEMPTY^';
-			for(var i=0;i<excludeTables.length;i++){
-				query += 'name!=' + excludeTables[i] + '^'
-			}
+			//for(var i=0;i<excludeTables.length;i++){
+			excludeTables.map(function(excludedTable){
+				query += 'name!=' + excludedTable + '^'
+			});
 			query += 'nameISNOTEMPTY^';
 			query += 'nameNOT LIKEts_^';
 			query += 'nameNOT LIKEv_^';
@@ -108,7 +141,7 @@
 			data.query = table.getEncodedQuery();
 			table.query();
 			while (table.next()) {
-				var url = gs.getProperty('glide.servlet.uri');
+
 				tableName = table.getValue('name');
 				check = new GlideRecord(tableName);
 				check.addQuery('sys_id', input.searchTerm);
@@ -127,22 +160,48 @@
 			// 
 		}
 	}
+	if(input && input.searchTerm ){
+		try {
+			includeTables.map(function(obj){
+				//console.log('in includeTables map');
+				obj.columns.map(function(field){
+					var tableGR = new GlideRecord(obj.table);
+					//console.log('in obj.columns map');
+					tableGR.addEncodedQuery(field + 'LIKE' + input.searchTerm);
+					tableGR.query();
+					console.log('Looking on ' + obj.table + ' for ' + tableGR.getEncodedQuery());
+					if(tableGR.hasNext()){
+						// found results
+						while(tableGR.next()){
+							console.log('found result');
+							url += obj.table + '.do?sys_id=' + tableGR.getValue('sys_id');
+							data.urls.push({
+								url: url,
+								displayValue: tableGR.getDisplayValue() || "(empty)",
+								table: obj.table
+							})
+						}
+					}
+				});
+			});
+		} catch (err) {
+			console.log(err);
+		}
+	}
 })();]]></script>
         <servicenow>false</servicenow>
         <sys_class_name>sp_widget</sys_class_name>
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 09:02:53</sys_created_on>
-        <sys_customer_update>false</sys_customer_update>
         <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
-        <sys_mod_count>232</sys_mod_count>
+        <sys_mod_count>247</sys_mod_count>
         <sys_name>Code Search Widget</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
-        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
-        <sys_updated_by>jace.benson@gmail.com</sys_updated_by>
-        <sys_updated_on>2017-11-03 14:29:09</sys_updated_on>
+        <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
+        <sys_updated_on>2018-03-07 15:07:17</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
   <div class="panel-heading">
     <h3 class="panel-title">${Code Search}</h3>
@@ -165,9 +224,10 @@
     Searching sys_ids...
   </h1>
 </div>
-<div class="panel panel-default" ng-if="records.length>0 && startSearchSysid">
+<div class="panel panel-default" ng-if="records.length>0 && ( startSearchSysid || startCustomSearch )">
   <h1 class="text-center">
-    Exact sys_id matches
+    <span ng-if="startSearchSysid">Exact sys_id matches</span>
+    <span ng-if="startCustomSearch">Slow Search</span>
   </h1>
   <div class="panel-body">
     <div class="row container" ng-repeat="record in records">
