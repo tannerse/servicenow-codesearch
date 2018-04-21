@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_ws_definition">
+    <sys_ws_definition action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <base_uri>/api/x_47329_code_searc/query</base_uri>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_version>No active default version</default_version>
+        <doc_link/>
+        <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
+        <is_versioned>false</is_versioned>
+        <name>query</name>
+        <namespace>x_47329_code_searc</namespace>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <service_id>query</service_id>
+        <short_description>Give a sysid</short_description>
+        <sys_class_name>sys_ws_definition</sys_class_name>
+        <sys_created_by>jace.benson@protonmail.com</sys_created_by>
+        <sys_created_on>2018-04-21 04:39:12</sys_created_on>
+        <sys_id>9cf723920fe95300fc69cdbce1050ef4</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>query</sys_name>
+        <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
+        <sys_update_name>sys_ws_definition_9cf723920fe95300fc69cdbce1050ef4</sys_update_name>
+        <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
+        <sys_updated_on>2018-04-21 04:59:22</sys_updated_on>
+    </sys_ws_definition>
+</record_update>

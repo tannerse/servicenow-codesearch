@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_ws_query_parameter">
+    <sys_ws_query_parameter action="INSERT_OR_UPDATE">
+        <example_value/>
+        <name>sysid</name>
+        <required>false</required>
+        <short_description/>
+        <sys_class_name>sys_ws_query_parameter</sys_class_name>
+        <sys_created_by>jace.benson@protonmail.com</sys_created_by>
+        <sys_created_on>2018-04-21 04:44:13</sys_created_on>
+        <sys_id>2709eb920fe95300fc69cdbce1050ec5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sysid</sys_name>
+        <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
+        <sys_update_name>sys_ws_query_parameter_2709eb920fe95300fc69cdbce1050ec5</sys_update_name>
+        <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
+        <sys_updated_on>2018-04-21 04:44:13</sys_updated_on>
+        <web_service_definition display_value="Code Search">939d2ac3d7220200b6bddb0c82520377</web_service_definition>
+    </sys_ws_query_parameter>
+</record_update>

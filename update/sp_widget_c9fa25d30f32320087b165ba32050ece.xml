@@ -2,52 +2,71 @@
 <record_update table="sp_widget">
     <sp_widget action="INSERT_OR_UPDATE">
         <category/>
-        <client_script><![CDATA[function($scope, $http, $location) {
-	/* widget controller */
+        <client_script><![CDATA[function($scope, $http, $location, $window) {
 	var c = this;
-	$scope.startSearchSysid = false;
-	$scope.startSearchCode = false;
-	c.doSearch = function() {
-		$scope.startSearchCode = true;
-		if (c.data.searchTerm) {
-			// purposely searching all scopes so hard-coding the parameter
-			var searchGroup = 'x_47329_code_searc.default';
-
-			//var endpoint = "/api/sn_codesearch/code_search/search?term="+c.data.searchTerm+"&search_all_scopes=true";
-			var endpoint = "/api/sn_codesearch/code_search/search?search_group="+searchGroup+"&term="+c.data.searchTerm+"&search_all_scopes=true";
-			$http.get(endpoint)
-				.success(function(response) {
-				c.searchTerm = "";
-				c.allScopes = "";
-				$scope.response = response;
-				console.log(endpoint);
-					console.log('client response', response);
-				/*$scope.server.update().then(function(response){
-					$scope.startCustomSearch = true;
-					console.log('on client: ' + JSON.stringify(response,'','  '));
-					$scope.records = response.urls;
-				})*/
+	$scope.loading = false;
+	$scope.search = "";
+	$scope.hits = 0;
+	$scope.codeSearch = function() {
+		$scope.search = "code";
+		$scope.loading = true;
+		if ($scope.term) {
+			$scope.hits = 0;
+			var updateUrl = "/code"+"?q"+"=" + $scope.term;
+			$window.history.pushState("", $scope.term, updateUrl);
+			var searchGroup = "x_47329_code_searc.default";
+			var endpoint = "/api/sn_codesearch/code_search/search?";
+			endpoint += "search_group="+searchGroup+"&";
+			endpoint += "term="+$scope.term+"&";
+			endpoint += "search_all_scopes=true";
+			$http.get(endpoint).success(function(response) {
+				$scope.loading = false;
+				$scope.results = response.result;
+				$scope.results.map(function(table){
+					table.hits.map(function(hit){
+						$scope.hits++;
+					});
+				})
 			});
-			if(c.data.searchTerm.length === 32){
-				$scope.startSearchSysid = true;
-				$scope.server.update().then(function(response){
-					//console.log('on client: ' + JSON.stringify(response,'','  '));
-					$scope.records = response.urls;
-				});
-			}
-		} else {
-			$scope.response = "";
+		}
+	}
+	$scope.sysIdSearch = function() {
+		$scope.search = "sysid";
+		$scope.loading = true;
+		if ($scope.term) {
+			$scope.hits = 0;
+			var updateUrl = "/code"+"?s"+"="+$scope.term;
+			$window.history.pushState("", $scope.term, updateUrl);
+			var searchGroup = "x_47329_code_searc.default";
+			var endpoint = "/api/x_47329_code_searc/query?";
+			endpoint += "sysid=" + $scope.term;//c661e7650f211300fc69cdbce1050e02
+			$http.get(endpoint).success(function(response) {
+				$scope.loading = false;
+				$scope.results = response.result;
+				//console.log($scope.results);
+				$scope.results.map(function(hits){
+					$scope.hits++;
+				})
+			});
 		}
 	}
 
 	// Update to work with URL parameters
-	if($location.search().searchTerm) {
-		c.data.searchTerm = $location.search().searchTerm;
-		c.doSearch();
+	if($location.search().q){
+		$scope.term = $location.search().q;
+		if($scope.term.length>0)
+			$scope.codeSearch();
+	}
+	if($location.search().s){
+		$scope.term = $location.search().s;
+		if($scope.term.length>0)
+			$scope.sysIdSearch();
 	}
 }]]></client_script>
         <controller_as>c</controller_as>
-        <css/>
+        <css>#spinner{
+  font-size:10em;
+}</css>
         <data_table>sp_instance</data_table>
         <demo_data/>
         <description/>
@@ -62,208 +81,84 @@
         <public>false</public>
         <roles/>
         <script><![CDATA[(function() {  
-	var excludeTables = [
-		'clone_log',
-		'discovery_log',
-		'global',
-		'import_log',
-		'plan_execution',
-		'plan_mysql',
-		'plan_oracle',
-		'pa_job_log_rows',
-		'sla_repair_log_entry',
-		'sysevent',
-		'syslog',
-		'syslog_email',
-		'syslog_cancellation',
-		'syslog_transaction',
-		'sys_attachment_doc',
-		'sys_querystat',
-		'sys_coalesce_strategy_deferred',
-		'sys_export_set_log',
-		'sys_email_log',
-		'sys_geocoding_request',
-		'sys_index_explain',
-		'sys_metadata',
-		'sys_rw_action',
-		'sys_rw_amb_action',
-		'sys_rollback_log',
-		'sys_schema_change',
-		'sys_storage_alias',
-		'sys_storage_table_alias',
-		'sys_table_partition',
-		'sys_upgrade_blame',
-		'sys_upgrade_history_log',
-		'sys_update_version',
-		'sys_user_session',
-		'sys_user_token',
-		'sys_user_token_network',
-		'sys_upgrade_blame',
-		'wf_log'
-	];
-	var includeTables = [
-		{
-			table: 'sys_variable_value',
-			columns: ['value']
-		},
-		{
-			table: 'sys_dictionary',
-			columns: [
-				'dynamic_ref_qual',
-				'reference_qual',
-				'attributes',
-				'default_value',
-				'calculation'
-			]
-		},{
-			table: 'sys_dictionary_override',
-			columns: [
-				'reference_qual',
-				'attributes',
-				'default_value',
-				'calculation'
-			]
-		}
-	];
-	data.urls = [];
-	
-	if(input && input.searchTerm && input.searchTerm.length===32){
-		// search for sys_ids...
-		try {
-			var check;
-			var tableName;
-			var table = new GlideRecord('sys_db_object');
-			//Make sure we're not looking at a ts (text search) table.
-			var query = '';
-			query += 'sys_update_nameISNOTEMPTY^';
-			//for(var i=0;i<excludeTables.length;i++){
-			excludeTables.map(function(excludedTable){
-				query += 'name!=' + excludedTable + '^'
-			});
-			query += 'nameISNOTEMPTY^';
-			query += 'nameNOT LIKEts_^';
-			query += 'nameNOT LIKEv_^';
-			table.addEncodedQuery(query); 
-			data.query = table.getEncodedQuery();
-			table.query();
-			while (table.next()) {
-
-				tableName = table.getValue('name');
-				check = new GlideRecord(tableName);
-				check.addQuery('sys_id', input.searchTerm);
-				check.query();
-				if (check.hasNext()) {
-					check.next();
-					var url = gs.getProperty('glide.servlet.uri');
-					url += tableName + '.do?sys_id=' + input.searchTerm;
-					data.urls.push({
-						url: url,
-						displayValue: check.getDisplayValue() || "(empty)",
-						table: tableName.toString()
-					});
-				}
-			}
-		} catch (error){
-			// 
-		}
-	}
-	/*
-	if(input && input.searchTerm ){
-		try {
-			includeTables.map(function(obj){
-				//console.log('in includeTables map');
-				obj.columns.map(function(field){
-					var tableGR = new GlideRecord(obj.table);
-					//console.log('in obj.columns map');
-					tableGR.addEncodedQuery(field + 'LIKE' + input.searchTerm);
-					tableGR.query();
-					console.log('Looking on ' + obj.table + ' for ' + tableGR.getEncodedQuery());
-					if(tableGR.hasNext()){
-						// found results
-						while(tableGR.next()){
-							console.log('found result');
-							var url = gs.getProperty('glide.servlet.uri');
-							url += obj.table + '.do?sys_id=' + tableGR.getValue('sys_id');
-							data.urls.push({
-								url: url,
-								displayValue: tableGR.getDisplayValue() || "(empty)",
-								table: obj.table
-							})
-						}
-					}
-				});
-			});
-		} catch (err) {
-			console.log(err);
-		}
-	}*/
 })();]]></script>
         <servicenow>false</servicenow>
         <sys_class_name>sp_widget</sys_class_name>
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 09:02:53</sys_created_on>
         <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
-        <sys_mod_count>255</sys_mod_count>
+        <sys_mod_count>316</sys_mod_count>
         <sys_name>Code Search Widget</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
         <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
-        <sys_updated_on>2018-04-19 02:47:57</sys_updated_on>
+        <sys_updated_on>2018-04-21 05:37:43</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
   <div class="panel-heading">
     <h3 class="panel-title">${Code Search}</h3>
   </div>
   <div class="panel-body col-12">
-    <form class="navbar-form col-12" ng-submit="c.doSearch()">
+    <form>
       <div class="row">
-        <div class="input-group" style="display:flex;">
-          <input id="search-term" type="text" placeholder="${Search term}" class="form-control" ng-model="c.data.searchTerm" /> 
-          <span class="input-group-btn">
-            <button class="btn btn-primary" ng-click="c.doSearch()"><i class="glyphicon glyphicon-search" aria-hidden="true"></i></button>
-          </span>
-        </div><!-- /input-group -->
-      </div>
+        <div class="col-sm-8" style="display:flex;">
+          <input id="search-term" type="text" placeholder="${Search term}" class="form-control" ng-model="term" /> 
+        </div>
+        <div class="col-sm-2">
+          <button class="btn btn-primary" ng-click="codeSearch()">
+            <i class="glyphicon glyphicon-search" aria-hidden="true"></i> Code
+          </button>
+        </div>
+        <div class="col-sm-2">
+          <button class="btn btn-danger" ng-click="sysIdSearch()">
+            <i class="glyphicon glyphicon-search" aria-hidden="true"></i> Sysids
+          </button>
+        </div>
+      </div><!-- /input-group -->
     </form>
   </div>
 </div>
-<div class="panel panel-default" ng-if="!records && startSearchSysid">
-  <h1 class="text-center">
-    Searching sys_ids...
-  </h1>
-</div>
-<div class="panel panel-default" ng-if="records.length>0 && ( startSearchSysid || startCustomSearch )">
-  <h1 class="text-center">
-    <span ng-if="startSearchSysid">Exact sys_id matches</span>
-    <span ng-if="startCustomSearch">Slow Search</span>
-  </h1>
-  <div class="panel-body">
-    <div class="row container" ng-repeat="record in records">
-      <p>
-        <a href={{record.url}} target="_blank">{{record.displayValue}} on {{record.table}}</a>
-      </p>
-    </div>
+<div class="panel panel-default" ng-if="loading">
+  <div class="text-center">
+    <h1 ng-if="search==='code'">
+      Searching code...  
+    </h1>
+    <h1 ng-if="search==='sysid'">
+      Searching for record...  
+    </h1>
+    <div class="fa fa-spinner fa-spin" id="spinner"></div>
   </div>
 </div>
-<div class="panel panel-default" ng-if="!response && startSearchCode">
+<div class="panel panel-default" ng-if="results && !loading">
   <h1 class="text-center">
-    Searching code...
-  </h1>
-</div>
-<div class="panel panel-default" ng-if="response.result && startSearchCode">
-  <h1 class="text-center">
-    Code matches
+    <div ng-if="hits>0 && search === 'code'">
+     {{hits}} Code Matches
+    </div>
+    <div ng-if="hits>0 && search === 'sysid'">
+     Found
+    </div>
+    <div ng-if="hits === 0">
+      No Matches Found
+    </div>
   </h1>
   <div class="panel-body">
-    <div ng-repeat="table in response.result">
+    
+    <div ng-if="search==='sysid'" ng-repeat="hits in results">
+      <div class="row container" id="{{hits.sysid}}">
+        <p>
+          <a href="{{hits.url}}">{{hits.displayValue}} on {{hits.table}}.</a>
+        </p>
+      </div>
+    </div>
+    <div ng-if="search==='code'" ng-repeat="table in results">
       <div class="row container" ng-if="table.hits.length>0">
         <p>
           <a href="#{{table.recordType}}">{{table.tableLabel}} has {{table.hits.length}} matching records.</a>
         </p>
       </div>
     </div>
-    <div ng-repeat="table in response.result">
+    <div ng-repeat="table in results">
       <div class="row" id="{{table.recordType}}" ng-if="table.hits.length>0">
         <h1 class="text-center">
           {{table.tableLabel}}
