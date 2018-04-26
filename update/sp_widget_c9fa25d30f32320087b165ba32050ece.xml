@@ -4,17 +4,28 @@
         <category/>
         <client_script><![CDATA[function($scope, $http, $location, $window) {
 	var c = this;
+	//$scope.tables = data.tables;
 	$scope.loading = false;
 	$scope.search = "";
 	$scope.hits = 0;
+	$scope.table = "All Tables"
+	$scope.table_name = ""
 	$scope.setUrl = function(type) {
+		console.log(type);
 		var updateUrl = "";
-		if(type === "sysid"){
+		if (type === "sysid") {
 			updateUrl = "/code"+"?s"+"=" + $scope.term;
-		} else {
+		} else if (type === "code") {
 			updateUrl = "/code"+"?q"+"=" + $scope.term;
+		} else {
+			updateUrl = "/code"+"?q"+"=" + $scope.term + "&t=" + type;
 		}
 		$window.history.pushState("", $scope.term, updateUrl);
+	}
+	$scope.setURLWithTable = function(table){
+		console.log('...');
+		$scope.table_name = table;
+		$scope.setUrl('code');
 	}
 	$scope.codeSearch = function() {
 		$scope.search = "code";
@@ -26,14 +37,30 @@
 			endpoint += "search_group="+searchGroup+"&";
 			endpoint += "term="+$scope.term+"&";
 			endpoint += "search_all_scopes=true";
+			if($scope.table_name != ""){
+				endpoint += "&table=" + $scope.table_name
+			}
 			$http.get(endpoint).success(function(response) {
 				$scope.loading = false;
 				$scope.results = response.result;
-				$scope.results.map(function(table){
-					table.hits.map(function(hit){
-						$scope.hits++;
-					});
-				})
+				console.log(response.result);
+				if($scope.table_name === ""){
+					response.result.map(function(table){
+						table.hits.map(function(hit){
+							$scope.hits++;
+						});
+					})	
+				} else {
+					if(response.result.hits){
+						response.result.table = {};
+						response.result.table.recordType = $scope.table_name;
+						response.result.table.tableLabel = $scope.table_name;
+						response.result.table.hits = response.result.hits;
+						response.result.hits.map(function(hit){
+							$scope.hits++;
+						});
+					}
+				}
 			});
 		}
 	}
@@ -55,17 +82,31 @@
 			});
 		}
 	}
-
+	$scope.setTable = function(table){
+		if(table.name == ""){
+			$scope.table = "All Tables";
+			$scope.table_name = ""
+		} else {
+			$scope.table = table.calculated;
+			$scope.table_name = table.name;
+		}
+	};
 	// Update to work with URL parameters
 	if($location.search().q){
 		$scope.term = $location.search().q;
-		if($scope.term.length>0)
+		if($scope.term.length>0){
+			if($location.search().t){
+				$scope.table_name = $location.search().t;
+				$scope.table = $location.search().t
+			}
 			$scope.codeSearch();
+		}
 	}
 	if($location.search().s){
 		$scope.term = $location.search().s;
-		if($scope.term.length>0)
+		if($scope.term.length>0){
 			$scope.sysIdSearch();
+		}
 	}
 }]]></client_script>
         <controller_as>c</controller_as>
@@ -85,133 +126,173 @@
         <option_schema/>
         <public>false</public>
         <roles/>
-        <script><![CDATA[(function() {  
+        <script><![CDATA[(function() {
+	data.tables = [{
+		name: '',
+		display: '',
+		calculated: 'All Tables'
+	}];
+	var tables = new GlideRecord('sn_codesearch_table');
+	tables.addQuery('search_group','9a44f352d7120200b6bddb0c82520376');
+	tables.orderBy('table');
+	tables.query();
+	while(tables.next()){
+		var tablesObj = {};
+		tablesObj.name = tables.getValue('table');
+		var documentation = new GlideRecord('sys_documentation');
+		documentation.addQuery('name', tables.getValue('table'));
+		documentation.addQuery('element','')
+		documentation.addQuery('language','en');
+		documentation.setLimit(1);
+		documentation.query();
+		if(documentation.next()){
+			tablesObj.display = documentation.getValue('label');
+			tablesObj.calculated = documentation.getValue('label') + ' ['+tables.getValue('table')+']';
+		}
+		data.tables.push(tablesObj)
+	}
 })();]]></script>
         <servicenow>false</servicenow>
         <sys_class_name>sp_widget</sys_class_name>
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 09:02:53</sys_created_on>
         <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
-        <sys_mod_count>334</sys_mod_count>
+        <sys_mod_count>335</sys_mod_count>
         <sys_name>Code Search Widget</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
         <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
-        <sys_updated_on>2018-04-22 04:30:06</sys_updated_on>
+        <sys_updated_on>2018-04-26 17:59:05</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
-  <div class="panel-heading">
-    <h3 class="panel-title">${Code Search}</h3>
-  </div>
-  <div class="panel-body col-12">
-    <form class="form-horizontal">
-      <fieldset>
-        <!-- Form Name -->
-        <!--<legend>Form Name</legend>-->
-        <div class="row">
-          <div class="col-sm-8">
-            <!-- Search input-->
-            <div class="form-group">
-              <div class="col-md-12">
-                <input id="searchinput" 
-                       name="searchinput" 
-                       placeholder="GlideDateTime" 
-                       class="form-control input-md" 
-                       type="search"
-                       ng-model="term"
-                       >
-                <p class="help-block">
-                  Enter code snippet or sysid and search with appropiate button.  If you search for sysid you will initially get a bunch of "scope" messages, this is expected.
-                </p>
+    <div class="panel-heading">
+      <h3 class="panel-title">${Code Search}</h3>
+    </div>
+    <div class="panel-body col-12">
+      <form class="form-horizontal">
+        <fieldset>
+          <!-- Form Name -->
+          <!--<legend>Form Name</legend>-->
+          <div class="row">
+            <div class="col-sm-8">
+              <!-- Search input-->
+              <div class="form-group">
+                <div class="col-md-12">
+                  <div class="input-group">
+                    <input id="searchinput" name="searchinput" class="form-control" placeholder="GlideDateTime" type="text"
+                           ng-model="term">
+                    <div class="input-group-btn">
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span data-value="" id="table" ng-bind="table"></span>
+                        <span class="caret"></span>
+                      </button>
+                      <ul ng-if="data.tables.length>0" class="dropdown-menu pull-right">
+                        <li ng-repeat="table in data.tables">
+                          <button class="btn btn-link" ng-click="setUrl(table.name)">
+                              {{table.calculated}}
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <!--<input id="searchinput" 
+                         name="searchinput" 
+                         placeholder="GlideDateTime" 
+                         class="form-control input-md" 
+                         type="search"
+                         ng-model="term"
+                         >-->
+                  <p class="help-block">
+                    Enter code snippet or sysid and search with appropiate button.  If you search for sysid you will initially get a bunch of "scope" messages, this is expected.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <!-- Button (Double) -->
+              <div class="form-group">
+                <!--<label class="col-md-4 control-label" for="button1id">Double Button</label>-->
+                <div class="col-md-4">
+                </div>
+                <div class="col-md-8">
+                  <button id="button1id" 
+                          name="button1id" 
+                          class="btn btn-success"
+                          ng-click="setUrl('code')"
+                          ><i class="glyphicon glyphicon-search" aria-hidden="true"></i> Code</button>
+                  <button id="button2id" 
+                          name="button2id" 
+                          class="btn btn-danger"
+                          ng-click="setUrl('sysid')"
+                          ><i class="glyphicon glyphicon-search" aria-hidden="true"></i> Sysid</button>
+                </div>
               </div>
             </div>
           </div>
-          <div class="col-sm-4">
-            <!-- Button (Double) -->
-            <div class="form-group">
-              <!--<label class="col-md-4 control-label" for="button1id">Double Button</label>-->
-              <div class="col-md-4">
-              </div>
-              <div class="col-md-8">
-                <button id="button1id" 
-                        name="button1id" 
-                        class="btn btn-success"
-                        ng-click="setUrl('code')"
-                        ><i class="glyphicon glyphicon-search" aria-hidden="true"></i> Code</button>
-                <button id="button2id" 
-                        name="button2id" 
-                        class="btn btn-danger"
-                        ng-click="setUrl('sysid')"
-                        ><i class="glyphicon glyphicon-search" aria-hidden="true"></i> Sysid</button>
+        </fieldset>
+      </form>
+  
+    </div>
+  </div>
+  <div class="panel panel-default" ng-if="loading">
+    <div class="text-center">
+      <h1 ng-if="search==='code'">
+        Searching code...  
+      </h1>
+      <h1 ng-if="search==='sysid'">
+        Searching for record...  
+      </h1>
+      <div class="fa fa-spinner fa-spin" id="spinner"></div>
+    </div>
+  </div>
+  <div class="panel panel-default" ng-if="results && !loading">
+    <h1 class="text-center">
+      <div ng-if="hits>0 && search === 'code'">
+        {{hits}} Code Matches
+      </div>
+      <div ng-if="hits>0 && search === 'sysid'">
+        Found
+      </div>
+      <div ng-if="hits === 0">
+        No Matches Found
+      </div>
+    </h1>
+    <div class="panel-body">
+      <div ng-if="search==='sysid'" ng-repeat="hits in results">
+        <div class="row container" id="{{hits.sysid}}">
+          <p>
+            <a href="{{hits.url}}">{{hits.displayValue}} on {{hits.table}}.</a>
+          </p>
+        </div>
+      </div>
+      <div ng-if="search!=='sysid'" ng-repeat="table in results">
+        <div class="row container" ng-if="table.hits.length>0">
+          <p>
+            <a href="#{{table.recordType}}">{{table.recordType}} has {{table.hits.length}} matching records.</a>
+          </p>
+        </div>
+      </div>
+      <div ng-repeat="table in results">
+        <div class="row" id="{{table.recordType}}" ng-if="table.hits.length>0">
+          <h1 class="text-center">
+            {{table.tableLabel}}
+          </h1>
+        </div>
+        <div class="row" ng-if="table.hits.length>0">
+          <div class="row container" ng-repeat="hit in table.hits">
+            <div class="col-sm-2">
+              <a ng-href="{{hit.className}}.do?sys_id={{hit.sysId}}" target="_blank">{{hit.name}}</a>
+            </div>
+            <div class="col-sm-10">
+              <div ng-repeat="match in hit.matches"> 
+                <pre><code class="javascript"><span ng-repeat="context in match.lineMatches"><span>Line {{context.line}}</span>: <span>{{context.context}}</span><br/></span></code></pre> 
               </div>
             </div>
           </div>
         </div>
-      </fieldset>
-    </form>
-
-  </div>
-</div>
-<div class="panel panel-default" ng-if="loading">
-  <div class="text-center">
-    <h1 ng-if="search==='code'">
-      Searching code...  
-    </h1>
-    <h1 ng-if="search==='sysid'">
-      Searching for record...  
-    </h1>
-    <div class="fa fa-spinner fa-spin" id="spinner"></div>
-  </div>
-</div>
-<div class="panel panel-default" ng-if="results && !loading">
-  <h1 class="text-center">
-    <div ng-if="hits>0 && search === 'code'">
-      {{hits}} Code Matches
-    </div>
-    <div ng-if="hits>0 && search === 'sysid'">
-      Found
-    </div>
-    <div ng-if="hits === 0">
-      No Matches Found
-    </div>
-  </h1>
-  <div class="panel-body">
-
-    <div ng-if="search==='sysid'" ng-repeat="hits in results">
-      <div class="row container" id="{{hits.sysid}}">
-        <p>
-          <a href="{{hits.url}}">{{hits.displayValue}} on {{hits.table}}.</a>
-        </p>
       </div>
     </div>
-    <div ng-if="search==='code'" ng-repeat="table in results">
-      <div class="row container" ng-if="table.hits.length>0">
-        <p>
-          <a href="#{{table.recordType}}">{{table.tableLabel}} has {{table.hits.length}} matching records.</a>
-        </p>
-      </div>
-    </div>
-    <div ng-repeat="table in results">
-      <div class="row" id="{{table.recordType}}" ng-if="table.hits.length>0">
-        <h1 class="text-center">
-          {{table.tableLabel}}
-        </h1>
-      </div>
-      <div class="row" ng-if="table.hits.length>0">
-        <div class="row container" ng-repeat="hit in table.hits">
-          <div class="col-sm-2">
-            <a ng-href="{{hit.className}}.do?sys_id={{hit.sysId}}" target="_blank">{{hit.name}}</a>
-          </div>
-          <div class="col-sm-10">
-            <div ng-repeat="match in hit.matches"> 
-              <pre><code class="javascript"><span ng-repeat="context in match.lineMatches"><span>Line {{context.line}}</span>: <span>{{context.context}}</span><br/></span></code></pre> 
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>]]></template>
+  </div>]]></template>
     </sp_widget>
 </record_update>
