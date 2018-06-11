@@ -46,8 +46,33 @@
 				console.log(response.result);
 				if($scope.table_name === ""){
 					response.result.map(function(table){
-						table.hits.map(function(hit){
+						table.hits = table.hits.map(function(hit){
 							$scope.hits++;
+							//get activty and workflow name
+							try{
+								if(hit.className === "sys_variable_value"){
+									var wfEndpoint = "";
+									wfEndpoint += "/api/now/table/sys_variable_value/" + hit.sysId;
+									wfEndpoint += "?sysparm_display_value=true&sysparm_fields=document_key"
+									$http.get(wfEndpoint).success(function(wfResponse){
+										console.log(wfResponse.result)
+										if(typeof wfResponse.result.document_key != "undefined"){
+											var activityEndpoint = wfResponse.result.document_key.link;
+											activityEndpoint += "?sysparm_display_value=true&sysparm_fields=workflow_version";
+											$http.get(activityEndpoint).success(function(activityResponse){
+												hit.name = '"' + wfResponse.result.document_key.display_value + '" of ';
+												hit.name += activityResponse.result.workflow_version.display_value;
+												console.log(hit.name);
+												return hit;
+											});
+										}
+									});
+								}
+							}catch(err){
+								console.log(hit, err);
+							}
+							return hit;
+							//end new
 						});
 					})	
 				} else {
@@ -61,6 +86,7 @@
 						});
 					}
 				}
+				$scope.results = response.result;
 			});
 		}
 	}
@@ -157,14 +183,14 @@
         <sys_created_by>admin_SHARE</sys_created_by>
         <sys_created_on>2017-05-23 09:02:53</sys_created_on>
         <sys_id>c9fa25d30f32320087b165ba32050ece</sys_id>
-        <sys_mod_count>335</sys_mod_count>
+        <sys_mod_count>339</sys_mod_count>
         <sys_name>Code Search Widget</sys_name>
         <sys_package display_value="Code Search for SP" source="x_47329_code_searc">59ca65d30f32320087b165ba32050e30</sys_package>
         <sys_policy/>
         <sys_scope display_value="Code Search for SP">59ca65d30f32320087b165ba32050e30</sys_scope>
         <sys_update_name>sp_widget_c9fa25d30f32320087b165ba32050ece</sys_update_name>
         <sys_updated_by>jace.benson@protonmail.com</sys_updated_by>
-        <sys_updated_on>2018-04-26 17:59:05</sys_updated_on>
+        <sys_updated_on>2018-06-11 19:19:41</sys_updated_on>
         <template><![CDATA[<div class="panel panel-primary">
     <div class="panel-heading">
       <h3 class="panel-title">${Code Search}</h3>
