@@ -4,14 +4,10 @@ This is a scoped application for Service-now to allow easier searching all code 
 
 [![](screenshot.png)](https://gitlab.com/jacebenson/servicenow-codesearch/blob/docs/demo.mp4)
 
----
-
 ## Features
 
 - Table of contents of results
 - Inline code that is found
-
----
 
 ## Setup (Studio)
 
@@ -26,8 +22,6 @@ This is a scoped application for Service-now to allow easier searching all code 
 1. Attach xml file from `/dist` folder or from [Share](https://developer.servicenow.com/app.do#!/share/contents/7596230_code_share_for_sp?v=2.3&t=PRODUCT_DETAILS)
 1. Preview Update Set
 1. Commit Update Set
-
----
 
 ## Usage
 
